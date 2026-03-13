@@ -1,0 +1,156 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "apache-hop",
+  "sourceRoot": "apps/apache-hop",
+  "projectType": "application",
+  "tags": ["lang:java", "platform:hop"],
+  "namedInputs": {
+    "maven": [
+      "{projectRoot}/pom.xml",
+      "{projectRoot}/core/**/*",
+      "{projectRoot}/engine/**/*",
+      "{projectRoot}/engine-beam/**/*",
+      "{projectRoot}/lib/**/*",
+      "{projectRoot}/lib-jdbc/**/*",
+      "{projectRoot}/plugins/**/*",
+      "{projectRoot}/rap/**/*",
+      "{projectRoot}/rcp/**/*",
+      "{projectRoot}/rest/**/*",
+      "{projectRoot}/ui/**/*",
+      "{projectRoot}/assemblies/**/*",
+      "!{projectRoot}/**/target/**"
+    ]
+  },
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw clean install -DskipTests -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"],
+      "outputs": [
+        "{projectRoot}/assemblies/client/target",
+        "{projectRoot}/core/target",
+        "{projectRoot}/engine/target",
+        "{projectRoot}/engine-beam/target",
+        "{projectRoot}/lib/target",
+        "{projectRoot}/lib-jdbc/target",
+        "{projectRoot}/plugins/**/target",
+        "{projectRoot}/rap/target",
+        "{projectRoot}/rcp/target",
+        "{projectRoot}/rest/target",
+        "{projectRoot}/ui/target"
+      ]
+    },
+    "build-core": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw install -pl core -am -DskipTests -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"],
+      "outputs": ["{projectRoot}/core/target"]
+    },
+    "build-engine": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw install -pl engine -am -DskipTests -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"],
+      "outputs": [
+        "{projectRoot}/engine/target",
+        "{projectRoot}/core/target"
+      ]
+    },
+    "build-plugins": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw install -pl plugins -am -DskipTests -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"],
+      "outputs": ["{projectRoot}/plugins/**/target"]
+    },
+    "build-ui": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw install -pl ui -am -DskipTests -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"],
+      "outputs": [
+        "{projectRoot}/ui/target",
+        "{projectRoot}/engine/target",
+        "{projectRoot}/core/target"
+      ]
+    },
+    "build-module": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw install -pl {args.module} -am -DskipTests -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"]
+    },
+    "assemble": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "commands": [
+          "cd assemblies/client/target && unzip -o -q hop-client-*.zip"
+        ],
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"],
+      "outputs": ["{projectRoot}/assemblies/client/target/hop"]
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["assemble"],
+      "options": {
+        "command": "./assemblies/client/target/hop/hop-gui.sh",
+        "cwd": "apps/apache-hop"
+      }
+    },
+    "run-server": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["assemble"],
+      "options": {
+        "command": "./assemblies/client/target/hop/hop-server.sh",
+        "cwd": "apps/apache-hop"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw test -T1C",
+        "cwd": "apps/apache-hop"
+      },
+      "cache": true,
+      "inputs": ["maven"]
+    },
+    "test-module": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw test -pl {args.module} -am",
+        "cwd": "apps/apache-hop"
+      }
+    },
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw clean",
+        "cwd": "apps/apache-hop"
+      }
+    }
+  }
+}
